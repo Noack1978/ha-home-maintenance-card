@@ -25,8 +25,8 @@ const WS = {
   tags: (hass) => hass.callWS({ type: "tag/list" }),
   add: (hass, payload) =>
     hass.callWS({ type: "home_maintenance/add_task", ...payload }),
-  update: (hass, payload) =>
-    hass.callWS({ type: "home_maintenance/update_task", ...payload }),
+  update: (hass, id, updates) =>
+    hass.callWS({ type: "home_maintenance/update_task", task_id: id, updates }),
   remove: (hass, id) =>
     hass.callWS({ type: "home_maintenance/remove_task", task_id: id }),
   complete: (hass, id) =>
@@ -402,7 +402,7 @@ class HomeMaintenanceCard extends HTMLElement {
         if (isNew) {
           await WS.add(this._hass, payload);
         } else {
-          await WS.update(this._hass, { task_id: task.id, ...payload });
+          await WS.update(this._hass, task.id, payload);
         }
         close();
         this._refresh();
