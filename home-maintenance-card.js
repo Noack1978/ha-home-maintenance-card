@@ -386,14 +386,18 @@ class HomeMaintenanceCard extends HTMLElement {
       const form = overlay.querySelector("form");
       if (!form.reportValidity()) return;
       const fd = new FormData(form);
+      const iconVal = fd.get("icon").trim();
+      const tagVal = fd.get("tag_id");
       const payload = {
         title: fd.get("title").trim(),
         interval_value: Number(fd.get("interval_value")),
         interval_type: fd.get("interval_type"),
         last_performed: fd.get("last_performed") || todayStr,
-        icon: fd.get("icon").trim() || null,
-        tag_id: fd.get("tag_id") || null,
       };
+      // The integration's schema expects a string or an omitted key —
+      // sending an explicit null fails validation ("expected str... Got None").
+      if (iconVal) payload.icon = iconVal;
+      if (tagVal) payload.tag_id = tagVal;
       try {
         if (isNew) {
           await WS.add(this._hass, payload);
