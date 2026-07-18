@@ -15,6 +15,7 @@ Diese Karte ist ein **eigenständiges Companion-Projekt** und kein offizieller B
 - ✅ Aufgabe mit einem Klick als erledigt markieren
 - 🗑️ Aufgabe löschen (mit Bestätigungsabfrage)
 - Kein externes Framework, keine CDN-Abhängigkeit – reine Web-Component, passt sich automatisch an dein Light-/Dark-Theme an
+- Visueller Karten-Editor (kein YAML nötig) + Kartengröße per Ziehpunkt in der Bereichs-Ansicht (Sections) anpassbar
 
 ---
 
@@ -70,6 +71,7 @@ This card is an **independent companion project** and not an official part of th
 - Task list sorted by due date, with color-coded icons for due/overdue tasks
 - Add, edit, complete, and delete tasks directly from the card
 - No external framework or CDN dependency; adapts to your light/dark theme
+- Visual (GUI) card editor and resizable card size in the Sections view layout editor
 
 ### Requirement
 

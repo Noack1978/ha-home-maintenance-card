@@ -15,6 +15,9 @@
  * No card config options are required. Optional:
  *   type: custom:home-maintenance-card
  *   title: Haus-Wartung
+ *
+ * Supports the visual (GUI) card editor and resizable card size in the
+ * Sections view layout editor.
  */
 
 const WS = {
@@ -75,6 +78,26 @@ class HomeMaintenanceCard extends HTMLElement {
   setConfig(config) {
     this._config = config || {};
     this._title = this._config.title || "Haus-Wartung";
+  }
+
+  static getStubConfig() {
+    return { title: "Haus-Wartung" };
+  }
+
+  static getConfigElement() {
+    return document.createElement("home-maintenance-card-editor");
+  }
+
+  // Enables the resize handles in the Sections view visual editor.
+  getLayoutOptions() {
+    return {
+      grid_columns: 4,
+      grid_rows: 5,
+      grid_min_columns: 2,
+      grid_max_columns: 12,
+      grid_min_rows: 2,
+      grid_max_rows: 20,
+    };
   }
 
   set hass(hass) {
@@ -390,6 +413,70 @@ class HomeMaintenanceCard extends HTMLElement {
 }
 
 customElements.define("home-maintenance-card", HomeMaintenanceCard);
+
+/**
+ * Visual (GUI) editor for the card, shown in the dashboard editor
+ * when the card is added/edited without switching to YAML mode.
+ */
+class HomeMaintenanceCardEditor extends HTMLElement {
+  setConfig(config) {
+    this._config = config || {};
+    this._render();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+  }
+
+  _render() {
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+    this.shadowRoot.innerHTML = `
+      <style>
+        .field { padding: 12px 0; }
+        label {
+          display: block; font-size: 0.85em;
+          color: var(--secondary-text-color); margin-bottom: 4px;
+        }
+        input {
+          width: 100%; box-sizing: border-box;
+          padding: 10px; border-radius: 6px;
+          border: 1px solid var(--divider-color);
+          background: var(--card-background-color, #fff);
+          color: var(--primary-text-color);
+          font-size: 1em; font-family: inherit;
+        }
+        .hint {
+          font-size: 0.8em; color: var(--secondary-text-color);
+          margin-top: 10px;
+        }
+      </style>
+      <div class="field">
+        <label>Titel</label>
+        <input name="title" type="text" value="${esc(this._config.title || "")}" placeholder="Haus-Wartung">
+      </div>
+      <div class="hint">
+        Die Kartengröße lässt sich im Bereichs-Layout (Sections-Ansicht) über die
+        Ziehpunkte am Kartenrand anpassen, sobald die Karte auf dem Dashboard liegt.
+      </div>
+    `;
+    this.shadowRoot.querySelector('input[name="title"]').addEventListener("input", (e) => {
+      this._config = { ...this._config, title: e.target.value };
+      this._fireChanged();
+    });
+  }
+
+  _fireChanged() {
+    this.dispatchEvent(
+      new CustomEvent("config-changed", {
+        detail: { config: this._config },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+}
+
+customElements.define("home-maintenance-card-editor", HomeMaintenanceCardEditor);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
