@@ -425,15 +425,19 @@ customElements.define("home-maintenance-card", HomeMaintenanceCard);
 class HomeMaintenanceCardEditor extends HTMLElement {
   setConfig(config) {
     this._config = config || {};
-    this._render();
+    if (!this._built) {
+      this._build();
+    } else {
+      this._syncInput();
+    }
   }
 
   set hass(hass) {
     this._hass = hass;
   }
 
-  _render() {
-    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+  _build() {
+    this.attachShadow({ mode: "open" });
     this.shadowRoot.innerHTML = `
       <style>
         .field { padding: 12px 0; }
@@ -456,17 +460,30 @@ class HomeMaintenanceCardEditor extends HTMLElement {
       </style>
       <div class="field">
         <label>Titel</label>
-        <input name="title" type="text" value="${esc(this._config.title || "")}" placeholder="Haus-Wartung">
+        <input name="title" type="text" placeholder="Haus-Wartung">
       </div>
       <div class="hint">
         Die Kartengröße lässt sich im Bereichs-Layout (Sections-Ansicht) über die
         Ziehpunkte am Kartenrand anpassen, sobald die Karte auf dem Dashboard liegt.
       </div>
     `;
-    this.shadowRoot.querySelector('input[name="title"]').addEventListener("input", (e) => {
+    this._input = this.shadowRoot.querySelector('input[name="title"]');
+    this._input.value = this._config.title || "";
+    this._input.addEventListener("input", (e) => {
       this._config = { ...this._config, title: e.target.value };
       this._fireChanged();
     });
+    this._built = true;
+  }
+
+  // Called on every setConfig() after the initial build (HA re-invokes this
+  // on each config-changed round trip). Must NOT touch innerHTML here, or
+  // the input loses focus after every keystroke.
+  _syncInput() {
+    if (!this._input) return;
+    if (this.shadowRoot.activeElement === this._input) return;
+    const newVal = this._config.title || "";
+    if (this._input.value !== newVal) this._input.value = newVal;
   }
 
   _fireChanged() {
